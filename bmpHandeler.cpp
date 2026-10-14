@@ -92,6 +92,6 @@ ImageBMP HandlerBMP::Read(const char* path, bool& ok) {
 }
 
 
-void HandlerBMP::Write(const ImageBMP& image, const char* path, bool& ok) {
+void HandlerBMP::Write(const ImageBMP& image, const char* path, bool bottom_up, bool& ok) {
 
 }
