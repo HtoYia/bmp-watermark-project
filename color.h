@@ -2,6 +2,10 @@
 #include <stdint.h>
 
 struct Color {
+private:
+    static uint8_t Clamp(int v);
+    
+public:
     uint8_t R, G, B;
 
     Color(uint8_t R=0, uint8_t G=0, uint8_t B=0);
