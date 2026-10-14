@@ -23,7 +23,7 @@ bool StructHandler::TryWrite(std::ofstream& stream, const char* ptr, size_t size
 
 const size_t HandlerBMP::kBufferingBytes = 4096;
 
-ImageBMP HandlerBMP::Read(const char* path, bool& ok) {
+bool HandlerBMP::Read(const char* path, ImageBMP& out) {
     std::ifstream stream(path, std::ios_base::binary);
 
     // Reading headers
@@ -32,10 +32,9 @@ ImageBMP HandlerBMP::Read(const char* path, bool& ok) {
 
     if (!stream.is_open()
         || !StructHandler::TryRead(stream, (char*)(&bmp_fh), sizeof(BMPFileHeader))
-        || !StructHandler::TryRead(stream, (char*)(&bmp_ih), sizeof(BMPInfoHeader)))
-    {
-        ok = false;
-        return ImageBMP();
+        || !StructHandler::TryRead(stream, (char*)(&bmp_ih), sizeof(BMPInfoHeader))
+    ) {
+        return false;
     }
     if (!(bmp_fh.bfType == 0x4D42       // 'BM' - signature
         && bmp_fh.bfOffBits == 54       // sum headers size
@@ -47,8 +46,7 @@ ImageBMP HandlerBMP::Read(const char* path, bool& ok) {
         && bmp_ih.biClrUsed == 0        // no for 24 bit
         && bmp_ih.biClrImportant == 0   // no for 24 bit
     )) {
-        ok = false;
-        return ImageBMP();
+        return false;
     }
 
     // Reading colors
@@ -73,10 +71,7 @@ ImageBMP HandlerBMP::Read(const char* path, bool& ok) {
                 stream.read(buf, kBufferingBytes);
                 buf_len = stream.gcount();
                 buf_i = 0;
-                if (buf_len == 0) {
-                    ok = false;
-                    return ImageBMP();
-                }
+                if (buf_len == 0) return false;
             }
             char cur_byte = buf[buf_i++];
             if (j >= byte_width) continue;
@@ -87,11 +82,51 @@ ImageBMP HandlerBMP::Read(const char* path, bool& ok) {
         }
     }
 
-    ok = true;
-    return res;
+    return true;
 }
 
 
-void HandlerBMP::Write(const ImageBMP& image, const char* path, bool bottom_up, bool& ok) {
+bool HandlerBMP::Write(const ImageBMP& image, const char* path, bool bottom_up) {
+    std::ofstream stream(path, std::ios_base::binary);
+    uint32_t width  = image.GetHeight();
+    uint32_t height = image.GetHeight();
+
+    uint32_t padding   = (4 - ((width * 3) & 3)) & 3;
+    uint32_t row_size  = width * 3 + padding;
+    uint32_t data_size = row_size * height;
+
+    // Headers
+    BMPFileHeader bmp_fh = {
+        0x4D42,         // bfType
+        54 + data_size, // bfSize
+        0,              // bfReserved1
+        0,              // bfReserved2
+        54              // bfOffBits
+    };
+    BMPInfoHeader bmp_ih = {
+        40,             // biSize
+        (int32_t)width, // biWidth
+        (int32_t)height * (bottom_up ? 1 : -1), // biHeight
+        1,              // biPlanes
+        24,             // biBitCount
+        0,              // biCompression
+        data_size,      // biSizeImage
+        0,              // biXPelsPerMeter
+        0,              // biYPelsPerMeter
+        0,              // biClrUsed
+        0               // biClrImportant
+    };
+
+    // Writing headers
+    if (!stream.is_open()
+        || !StructHandler::TryWrite(stream, (char*)(&bmp_fh), sizeof(BMPFileHeader))
+        || !StructHandler::TryWrite(stream, (char*)(&bmp_ih), sizeof(BMPInfoHeader))
+    ) {
+        return false;
+    }
+
+
+
+    
 
 }

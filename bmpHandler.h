@@ -41,6 +41,6 @@ private:
 public:
     HandlerBMP() = delete;
 
-    static ImageBMP Read(const char* path, bool& ok);
-    static void Write(const ImageBMP& image, const char* path, bool bottom_up, bool& ok);
+    static bool Read(const char* path, ImageBMP& out);
+    static bool Write(const ImageBMP& image, const char* path, bool bottom_up);
 };
