@@ -1,16 +1,22 @@
+#pragma once
 #include <stddef.h>
-#include <color.h>
+#include <vector>
+#include "color.h"
 
 struct ImageBMP {
 private:
-    size_t weight, height;
-    Color** colors;
+    size_t width_ = 0;
+    size_t height_ = 0;
+    std::vector<Color> colors_;
 
 public:
-    size_t GetWeight();
-    size_t GetHeight();
-    Color& GetPixel(size_t r, size_t c);
+    ImageBMP(size_t width, size_t height, const std::vector<Color>& colors);
+    ImageBMP(size_t width, size_t height);
+    ImageBMP();
 
-    ImageBMP(const Color* const* colors, size_t weight, size_t height);
-    ImageBMP(size_t weight, size_t height);
+    size_t GetWidth() const;
+    size_t GetHeight() const;
+
+    Color& Pixel(size_t r, size_t c);
+    const Color& Pixel(size_t r, size_t c) const;
 };

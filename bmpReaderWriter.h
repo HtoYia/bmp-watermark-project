@@ -1,7 +1,10 @@
-#include <imageBMP.h>
+#pragma once
+#include "imageBMP.h"
 
 class ReaderWriterBMP {
 public:
-    ImageBMP Read(const char* path, bool& out);
-    void Wtite(const ImageBMP& image, const char* path, bool& out);
+    ReaderWriterBMP() = delete;
+
+    static ImageBMP Read(const char* path, bool& ok);
+    static void Write(const ImageBMP& image, const char* path, bool& ok);
 };
