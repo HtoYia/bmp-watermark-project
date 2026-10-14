@@ -1,4 +1,4 @@
-#include "bmpHandler.h"
+#include "../include/bmpHandler.h"
 
 
 bool StructHandler::TryRead(std::ifstream& stream, char* ptr, size_t size) {
