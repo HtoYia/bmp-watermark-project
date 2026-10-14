@@ -49,7 +49,7 @@ bool HandlerBMP::Read(const char* path, ImageBMP& out) {
         return false;
     }
 
-    // Reading colors
+    // Reading pixels
     bool top_down = bmp_ih.biHeight < 0;
     size_t width = bmp_ih.biWidth;
     size_t height = top_down ? -bmp_ih.biHeight : bmp_ih.biHeight;
@@ -63,15 +63,17 @@ bool HandlerBMP::Read(const char* path, ImageBMP& out) {
     size_t padding = (4 - ((width * 3) & 3)) & 3;
     size_t byte_width = 3 * width;
     size_t byte_width_sum = 3 * width + padding;
+    size_t data_size = byte_width_sum * height;
     
     for (size_t i = 0; i < height; i++) {
         size_t row = top_down ? i : height - 1 - i;
         for (size_t j = 0; j < byte_width_sum; j++) {
             if (buf_i >= buf_len) {
-                stream.read(buf, kBufferingBytes);
-                buf_len = stream.gcount();
+                size_t cur_s = data_size > kBufferingBytes ? kBufferingBytes : data_size;
+                data_size -= cur_s;
+                buf_len = cur_s;
                 buf_i = 0;
-                if (buf_len == 0) return false;
+                if (!stream.read(buf, cur_s)) return false;
             }
             char cur_byte = buf[buf_i++];
             if (j >= byte_width) continue;
@@ -86,14 +88,15 @@ bool HandlerBMP::Read(const char* path, ImageBMP& out) {
 }
 
 
-bool HandlerBMP::Write(const ImageBMP& image, const char* path, bool bottom_up) {
+bool HandlerBMP::Write(const ImageBMP& image, const char* path, bool top_down) {
     std::ofstream stream(path, std::ios_base::binary);
-    uint32_t width  = image.GetHeight();
+    uint32_t width  = image.GetWidth();
     uint32_t height = image.GetHeight();
 
     uint32_t padding   = (4 - ((width * 3) & 3)) & 3;
-    uint32_t row_size  = width * 3 + padding;
-    uint32_t data_size = row_size * height;
+    size_t byte_width = 3 * width;
+    size_t byte_width_sum = 3 * width + padding;
+    uint32_t data_size = byte_width_sum * height;
 
     // Headers
     BMPFileHeader bmp_fh = {
@@ -106,7 +109,7 @@ bool HandlerBMP::Write(const ImageBMP& image, const char* path, bool bottom_up) 
     BMPInfoHeader bmp_ih = {
         40,             // biSize
         (int32_t)width, // biWidth
-        (int32_t)height * (bottom_up ? 1 : -1), // biHeight
+        (int32_t)height * (top_down ? -1 : 1), // biHeight
         1,              // biPlanes
         24,             // biBitCount
         0,              // biCompression
@@ -125,8 +128,30 @@ bool HandlerBMP::Write(const ImageBMP& image, const char* path, bool bottom_up) 
         return false;
     }
 
-
-
+    // Writing pixels
+    char buf[kBufferingBytes];
+    size_t buf_i = 0;
     
+    for (size_t i = 0; i < height; i++) {
+        size_t row = top_down ? i : height - 1 - i;
+        for (size_t j = 0; j < byte_width_sum; j++) {
+            if (buf_i >= kBufferingBytes) {
+                buf_i = 0;
+                if (!stream.write(buf, kBufferingBytes)) return false;
+            }
+            if (j >= byte_width) {
+                buf[buf_i++] = 0;
+                continue;
+            }
+            size_t col = j / 3;
+            if (j % 3 == 0) buf[buf_i++] = image.Pixel(row, col).B;
+            else if (j % 3 == 1) buf[buf_i++] = image.Pixel(row, col).G;
+            else buf[buf_i++] = image.Pixel(row, col).R;
+        }
+    }
+    if (buf_i != 0)
+        if (!stream.write(buf, buf_i))
+            return false;
 
+    return true;
 }
