@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "color.h"
+#include "../include/color.h"
 
 
 uint8_t Color::Clamp(int val) {
