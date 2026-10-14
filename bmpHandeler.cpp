@@ -26,6 +26,7 @@ const size_t HandlerBMP::kBufferingBytes = 4096;
 ImageBMP HandlerBMP::Read(const char* path, bool& ok) {
     std::ifstream stream(path, std::ios_base::binary);
 
+    // Reading headers
     BMPFileHeader bmp_fh;
     BMPInfoHeader bmp_ih;
 
@@ -36,46 +37,53 @@ ImageBMP HandlerBMP::Read(const char* path, bool& ok) {
         ok = false;
         return ImageBMP();
     }
+    if (!(bmp_fh.bfType == 0x4D42       // 'BM' - signature
+        && bmp_fh.bfOffBits == 54       // sum headers size
+        && bmp_ih.biSize == 40          // size of BEATMAPINFOHEAD
+        && bmp_ih.biWidth > 0           // just positive width
+        && bmp_ih.biHeight != 0         // just non-zero height
+        && bmp_ih.biBitCount == 24      // just 24-bit color
+        && bmp_ih.biCompression == 0    // not compression
+        && bmp_ih.biClrUsed == 0        // no for 24 bit
+        && bmp_ih.biClrImportant == 0   // no for 24 bit
+    )) {
+        ok = false;
+        return ImageBMP();
+    }
 
-    ImageBMP res(bmp_ih.biWidth, bmp_ih.biHeight);
+    // Reading colors
+    bool top_down = bmp_ih.biHeight < 0;
+    size_t width = bmp_ih.biWidth;
+    size_t height = top_down ? -bmp_ih.biHeight : bmp_ih.biHeight;
 
-    size_t padding = (4 - ((bmp_ih.biWidth * 3) & 3)) & 3;
+    ImageBMP res(width, height);
 
     char buf[kBufferingBytes];
     size_t buf_i = 0;
     size_t buf_len = 0;
 
-    for (size_t i = 0; i < bmp_ih.biHeight; i++) {
-        for (size_t j = 0; j < bmp_ih.biWidth; j++) {
-            unsigned char bgr[3];
-            for (size_t k = 0; k < 3; k++) {
-                if (buf_i == buf_len) {
-                    stream.read(buf, kBufferingBytes);
-                    buf_len = (size_t)stream.gcount();
-                    buf_i = 0;
-                    if (buf_len == 0) {
-                        ok = false;
-                        return ImageBMP();
-                    }
-                }
-                bgr[k] = (unsigned char)buf[buf_i++];
-            }
-            res.Pixel(bmp_ih.biHeight - 1 - i, j).B = bgr[0];
-            res.Pixel(bmp_ih.biHeight - 1 - i, j).G = bgr[1];
-            res.Pixel(bmp_ih.biHeight - 1 - i, j).R = bgr[2];
-        }
-
-        for (size_t p = 0; p < padding; p++) {
-            if (buf_i == buf_len) {
+    size_t padding = (4 - ((width * 3) & 3)) & 3;
+    size_t byte_width = 3 * width;
+    size_t byte_width_sum = 3 * width + padding;
+    
+    for (size_t i = 0; i < height; i++) {
+        size_t row = top_down ? i : height - 1 - i;
+        for (size_t j = 0; j < byte_width_sum; j++) {
+            if (buf_i >= buf_len) {
                 stream.read(buf, kBufferingBytes);
-                buf_len = (size_t)stream.gcount();
+                buf_len = stream.gcount();
                 buf_i = 0;
                 if (buf_len == 0) {
                     ok = false;
                     return ImageBMP();
                 }
             }
-            buf_i++;
+            char cur_byte = buf[buf_i++];
+            if (j >= byte_width) continue;
+            size_t col = j / 3;
+            if (j % 3 == 0) res.Pixel(row, col).B = cur_byte;
+            else if (j % 3 == 1) res.Pixel(row, col).G = cur_byte;
+            else res.Pixel(row, col).R = cur_byte;
         }
     }
 
