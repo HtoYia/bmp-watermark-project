@@ -1,5 +1,5 @@
 #include <stdexcept>
-#include "imageBMP.h"
+#include "../include/imageBMP.h"
 
 
 ImageBMP::ImageBMP(size_t width, size_t height, const std::vector<Color>& colors)
