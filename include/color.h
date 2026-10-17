@@ -29,4 +29,7 @@ public:
     Color& operator-=(uint8_t val);
     Color& operator*=(uint8_t val);
     Color& operator/=(uint8_t val);
+
+    bool operator==(const Color& oth) const;
+    bool operator!=(const Color& oth) const;
 };

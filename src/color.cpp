@@ -58,3 +58,6 @@ Color& Color::operator+=(uint8_t val) { *this = *this + val; return *this; }
 Color& Color::operator-=(uint8_t val) { *this = *this - val; return *this; }
 Color& Color::operator*=(uint8_t val) { *this = *this * val; return *this; }
 Color& Color::operator/=(uint8_t val) { *this = *this / val; return *this; }
+
+bool Color::operator==(const Color& oth) const { return R == oth.R && G == oth.G && B == oth.B; }
+bool Color::operator!=(const Color& oth) const { return !(*this == oth); }
