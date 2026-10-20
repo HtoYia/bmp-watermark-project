@@ -1,5 +1,4 @@
 #pragma once
-
 #include "imageBMP.h"
 
-void ApplyWatermark(ImageBMP& original, const ImageBMP& watermark);
+ImageBMP ApplyWatermark(const ImageBMP& original, const ImageBMP& watermark);

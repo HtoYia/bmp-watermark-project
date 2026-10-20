@@ -1,9 +1,7 @@
 find_package(GTest REQUIRED)
 
 add_executable(bmp_tests
-    bmp_test.cpp
-    color_test.cpp
-    watermark_test.cpp
+    color_test/color_test.cpp
 )
 
 target_link_libraries(bmp_tests PRIVATE

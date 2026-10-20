@@ -1,7 +1,8 @@
 #include "watermark.h"
+#include "imageBMP.h"
 
-void ApplyWatermark(ImageBMP& original, const ImageBMP& watermark) {
-    // Реализовать функцию 
-    (void)original;
-    (void)watermark;
+ImageBMP ApplyWatermark(const ImageBMP& original, const ImageBMP& watermark) {
+    // TODO (Кирилл): Реализовать функцию 
+    ImageBMP result = ImageBMP();   
+    return result; 
 }
