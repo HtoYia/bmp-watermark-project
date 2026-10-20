@@ -2,22 +2,11 @@
 
 
 bool StructHandler::TryRead(std::ifstream& stream, char* ptr, size_t size) {
-    char* buf = new char[size];
-    if (!stream.read(buf, size))
-        return false;
-
-    for (size_t i = 0; i < size; i++)
-        ptr[i] = buf[i];
-    
-    delete [] buf;
-    return true;
+    return static_cast<bool>(stream.read(ptr, size));
 }
 
 bool StructHandler::TryWrite(std::ofstream& stream, const char* ptr, size_t size) {
-    if (!stream.write(ptr, size))
-        return false;
-    
-    return true;
+    return static_cast<bool>(stream.write(ptr, size));
 }
 
 
@@ -84,6 +73,7 @@ bool HandlerBMP::Read(const char* path, ImageBMP& out) {
         }
     }
 
+    out = res;
     return true;
 }
 
