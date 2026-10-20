@@ -32,8 +32,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    ApplyWatermark(original, watermark); 
-    bool check_result = HandlerBMP::Write(original, result_file, false);
+    ImageBMP result = ApplyWatermark(original, watermark); 
+    bool check_result = HandlerBMP::Write(result, result_file, false);
     if (!check_result) { 
         std::cerr << "Failed to wright file" << result_file << "\n"; 
         return 1; 
