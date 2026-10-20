@@ -3,6 +3,7 @@
 #include "imageBMP.h"
 
 
+#pragma pack(push, 1)
 struct BMPFileHeader {
     uint16_t bfType;
     uint32_t bfSize;
@@ -24,6 +25,13 @@ struct BMPInfoHeader {
     uint32_t biClrUsed;
     uint32_t biClrImportant;
 };
+#pragma pack(pop)
+
+
+static_assert(sizeof(BMPFileHeader) == 14, "BMPFileHeader must be 14 bytes");
+
+static_assert(sizeof(BMPInfoHeader) == 40, "BMPInfoHeader must be 40 bytes");
+
 
 class StructHandler {
 public:
