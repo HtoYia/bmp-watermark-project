@@ -3,6 +3,6 @@
 
 ImageBMP ApplyWatermark(const ImageBMP& original, const ImageBMP& watermark) {
     // TODO (Кирилл): Реализовать функцию 
-    ImageBMP result = ImageBMP();   
-    return result; 
+    ImageBMP result = ImageBMP();
+    return result;
 }
