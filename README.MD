@@ -196,10 +196,7 @@ Workflow загружает исходный код, устанавливает
 
 Для каждого канала RGB применяется **формула**:
 
-$$
-C_{\text{result}} = (1 - \alpha) \cdot C_{\text{original}}
-+ \alpha \cdot C_{\text{watermark}}
-$$
+$C_{\text{result}} = (1 - \alpha) \cdot C_{\text{original}} + \alpha \cdot C_{\text{watermark}}$
 
 Где:
 
